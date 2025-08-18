@@ -1,0 +1,26 @@
+# Virtual environment
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VSCode settings (optional kalau kamu pakai VSCode)
+.vscode/
+
+# Environment variables
+.env
+
+# Credentials & tokens
+credentials.json
+token.json
+
+# Jupyter Notebook checkpoints (kalau pakai notebook)
+.ipynb_checkpoints/
+
+# MacOS / Windows system files
+.DS_Store
+Thumbs.db
