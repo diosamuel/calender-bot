@@ -9,7 +9,7 @@ import re
 import config
 from services.google_calendar import GoogleCalendarService
 from services.gemini_ai import GeminiAIService
-from bot.keyboards import get_main_menu, get_calendar_menu, get_confirm_keyboard
+from bot.keyboards import get_main_menu, get_calendar_menu, get_confirm_keyboard, get_quick_reply_keyboard
 from utils.helpers import format_event, parse_datetime_input
 
 # Conversation states
@@ -44,48 +44,104 @@ class BotHandlers:
         user = update.effective_user
         welcome_message = (
             f"Halo {user.first_name}! 👋\n\n"
-            "Saya adalah Calendar Assistant Bot Anda. "
-            "Saya bisa membantu Anda:\n\n"
-            "📅 Mengelola jadwal Google Calendar\n"
-            "🤖 Chat dengan AI Assistant\n"
-            "⏰ Set reminder untuk acara\n"
-            "📝 Analisis dan optimasi jadwal\n\n"
-            "Silakan pilih menu di bawah atau gunakan /help untuk bantuan."
+            "Saya adalah Calendar Assistant Bot Anda.\n\n"
+            "📅 *Cara Menggunakan Bot:*\n"
+            "• Gunakan tombol menu di bawah\n"
+            "• Atau ketik perintah langsung\n"
+            "• Atau chat langsung untuk membuat jadwal\n\n"
+            "💡 *Contoh Chat untuk Jadwal:*\n"
+            "_'Meeting dengan tim besok jam 2 siang'_\n"
+            "_'Rapat di kantor hari Senin pukul 10:00'_\n"
+            "_'Dinner dengan client tanggal 25/12 jam 7 malam di Hotel X'_\n\n"
+            "Pilih menu atau ketik /help untuk panduan lengkap."
         )
         
         await update.message.reply_text(
             welcome_message,
-            reply_markup=get_main_menu()
+            parse_mode='Markdown',
+            reply_markup=get_quick_reply_keyboard()
         )
     
     async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle /help command"""
-        help_text = (
-            "📚 *PANDUAN PENGGUNAAN BOT*\n\n"
-            "*Perintah Tersedia:*\n"
+        """Handle /help command - FIXED VERSION"""
+        # Split into multiple messages to avoid markdown parsing issues
+        
+        # Message 1: Header and Basic Commands
+        help_text_1 = (
+            "📚 *PANDUAN LENGKAP BOT*\n\n"
+            "🔹 *PERINTAH DASAR:*\n"
             "/start - Menu utama\n"
             "/help - Bantuan ini\n"
-            "/add_event - Tambah jadwal baru\n"
+            "/connect_calendar - Hubungkan Google Calendar\n"
+            "/add_event - Tambah jadwal step by step\n"
             "/list_events - Lihat jadwal hari ini\n"
             "/list_week - Lihat jadwal minggu ini\n"
             "/delete_event - Hapus jadwal\n"
-            "/ai - Chat dengan AI Assistant\n"
-            "/connect_calendar - Hubungkan Google Calendar\n\n"
-            "*Tips Penggunaan:*\n"
-            "• Anda bisa chat langsung dengan AI untuk menambah jadwal\n"
-            "• Contoh: 'Meeting dengan tim besok jam 2 siang'\n"
-            "• AI akan otomatis mengekstrak informasi jadwal\n\n"
-            "*Fitur AI:*\n"
-            "• Analisis jadwal\n"
-            "• Saran optimasi waktu\n"
-            "• Personal assistant untuk reminder\n"
-            "• Menjawab pertanyaan seputar produktivitas"
+            "/ai - Chat dengan AI Assistant"
         )
         
-        await update.message.reply_text(
-            help_text,
-            parse_mode='Markdown'
+        # Message 2: Format Input
+        help_text_2 = (
+            "📝 *FORMAT INPUT JADWAL:*\n\n"
+            "*A. Chat Langsung (AI):*\n"
+            "Ketik pesan natural, AI akan ekstrak jadwalnya.\n\n"
+            "*Contoh yang BAIK:*\n"
+            "• Meeting dengan client besok jam 2 siang di Starbucks\n"
+            "• Rapat tim hari Senin pukul 10:00 selama 2 jam\n"
+            "• Ulang tahun Budi tanggal 25/12/2024 jam 19:00\n"
+            "• Olahraga setiap Senin jam 6 pagi"
         )
+        
+        # Message 3: Step by Step Format
+        help_text_3 = (
+            "*B. Menggunakan /add_event:*\n"
+            "Bot akan tanya satu per satu:\n\n"
+            "1️⃣ *Judul:* Nama acara\n"
+            "   Contoh: Meeting Project X\n\n"
+            "2️⃣ *Tanggal:* Format fleksibel\n"
+            "   • 25/12/2024 atau 25-12-2024\n"
+            "   • besok / lusa / hari ini\n"
+            "   • Senin / Selasa (minggu ini)\n\n"
+            "3️⃣ *Waktu:* Format jam\n"
+            "   • 14:30 atau 2:30 PM\n"
+            "   • jam 2 siang\n\n"
+            "4️⃣ *Durasi:* Lama acara\n"
+            "   • 1 jam / 30 menit\n\n"
+            "5️⃣ *Lokasi:* Opsional\n"
+            "   • Nama tempat atau skip"
+        )
+        
+        # Message 4: Delete and AI Features
+        help_text_4 = (
+            "🗑️ *HAPUS JADWAL:*\n"
+            "1. Ketik /delete_event\n"
+            "2. Pilih nomor jadwal\n"
+            "3. Atau ketik cancel untuk batal\n\n"
+            "🤖 *FITUR AI:*\n"
+            "• Deteksi jadwal otomatis\n"
+            "• Analisis jadwal\n"
+            "• Saran produktivitas\n\n"
+            "*Contoh:*\n"
+            "/ai analisis jadwal minggu ini\n"
+            "/ai beri tips produktivitas"
+        )
+        
+        # Message 5: Tips
+        help_text_5 = (
+            "💡 *TIPS:*\n"
+            "• Chat natural saja, AI mengerti\n"
+            "• Sebutkan detail waktu dan tempat\n"
+            "• Gunakan tombol menu untuk akses cepat\n"
+            "• Cek jadwal rutin dengan /list_week\n\n"
+            "Ada pertanyaan? Chat langsung saja! 😊"
+        )
+        
+        # Send all messages
+        await update.message.reply_text(help_text_1, parse_mode='Markdown')
+        await update.message.reply_text(help_text_2, parse_mode='Markdown')
+        await update.message.reply_text(help_text_3, parse_mode='Markdown')
+        await update.message.reply_text(help_text_4, parse_mode='Markdown')
+        await update.message.reply_text(help_text_5, parse_mode='Markdown')
     
     async def connect_calendar(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle calendar connection"""
@@ -112,8 +168,10 @@ class BotHandlers:
             return ConversationHandler.END
         
         await update.message.reply_text(
-            "📝 Mari tambahkan jadwal baru!\n\n"
-            "Masukkan *judul acara*:",
+            "📝 *MEMBUAT JADWAL BARU*\n\n"
+            "Langkah 1 dari 5:\n"
+            "*Masukkan judul/nama acara:*\n\n"
+            "Contoh: _Meeting Project ABC_",
             parse_mode='Markdown'
         )
         
@@ -130,8 +188,14 @@ class BotHandlers:
         self.user_data[user_id]['event_title'] = title
         
         await update.message.reply_text(
-            "📅 Masukkan *tanggal* acara\n"
-            "Format: DD/MM/YYYY atau 'besok', 'lusa', dll:",
+            f"✅ Judul: *{title}*\n\n"
+            "Langkah 2 dari 5:\n"
+            "*Masukkan tanggal acara:*\n\n"
+            "Format yang diterima:\n"
+            "• DD/MM/YYYY (contoh: _25/12/2024_)\n"
+            "• Kata kunci: _hari ini_, _besok_, _lusa_\n"
+            "• Nama hari: _Senin_, _Selasa_, dll\n"
+            "• _minggu depan_",
             parse_mode='Markdown'
         )
         
@@ -147,16 +211,26 @@ class BotHandlers:
             self.user_data[user_id]['event_date'] = event_date
             
             await update.message.reply_text(
-                "⏰ Masukkan *waktu mulai*\n"
-                "Format: HH:MM (contoh: 14:30 atau 2:30 PM):",
+                f"✅ Tanggal: *{event_date.strftime('%A, %d %B %Y')}*\n\n"
+                "Langkah 3 dari 5:\n"
+                "*Masukkan waktu mulai:*\n\n"
+                "Format yang diterima:\n"
+                "• HH:MM (contoh: _14:30_)\n"
+                "• 12-hour: _2:30 PM_\n"
+                "• Kata: _jam 2 siang_",
                 parse_mode='Markdown'
             )
             
             return WAITING_EVENT_TIME
         except Exception as e:
             await update.message.reply_text(
-                "❌ Format tanggal tidak valid. Coba lagi.\n"
-                "Contoh: 25/12/2024 atau 'besok'"
+                "❌ Format tanggal tidak valid!\n\n"
+                "Contoh format yang benar:\n"
+                "• _25/12/2024_\n"
+                "• _besok_\n"
+                "• _Senin_\n\n"
+                "Silakan coba lagi:",
+                parse_mode='Markdown'
             )
             return WAITING_EVENT_DATE
     
@@ -173,15 +247,22 @@ class BotHandlers:
                 minute = int(time_parts[1])
                 
                 # Handle PM
-                if 'pm' in time_input.lower() and hour < 12:
-                    hour += 12
+                if 'pm' in time_input.lower() or 'sore' in time_input.lower() or 'malam' in time_input.lower():
+                    if hour < 12:
+                        hour += 12
                 
                 self.user_data[user_id]['event_hour'] = hour
                 self.user_data[user_id]['event_minute'] = minute
                 
                 await update.message.reply_text(
-                    "⏱️ Berapa lama durasi acara?\n"
-                    "Contoh: '1 jam', '90 menit', '2 jam 30 menit':"
+                    f"✅ Waktu mulai: *{hour:02d}:{minute:02d}*\n\n"
+                    "Langkah 4 dari 5:\n"
+                    "*Berapa lama durasi acara?*\n\n"
+                    "Contoh:\n"
+                    "• _1 jam_\n"
+                    "• _30 menit_\n"
+                    "• _2 jam 30 menit_",
+                    parse_mode='Markdown'
                 )
                 
                 return WAITING_EVENT_DURATION
@@ -189,8 +270,13 @@ class BotHandlers:
                 raise ValueError("Invalid time format")
         except Exception as e:
             await update.message.reply_text(
-                "❌ Format waktu tidak valid.\n"
-                "Contoh: 14:30 atau 2:30 PM"
+                "❌ Format waktu tidak valid!\n\n"
+                "Contoh format yang benar:\n"
+                "• _14:30_\n"
+                "• _2:30 PM_\n"
+                "• _jam 2 siang_\n\n"
+                "Silakan coba lagi:",
+                parse_mode='Markdown'
             )
             return WAITING_EVENT_TIME
     
@@ -221,16 +307,31 @@ class BotHandlers:
             self.user_data[user_id]['duration_hours'] = hours
             self.user_data[user_id]['duration_minutes'] = minutes
             
+            duration_text = ""
+            if hours > 0:
+                duration_text += f"{hours} jam "
+            if minutes > 0:
+                duration_text += f"{minutes} menit"
+            
             await update.message.reply_text(
-                "📍 Masukkan *lokasi* (opsional, ketik 'skip' untuk lewati):",
+                f"✅ Durasi: *{duration_text.strip()}*\n\n"
+                "Langkah 5 dari 5 (Opsional):\n"
+                "*Masukkan lokasi acara:*\n\n"
+                "• Ketik nama tempat/alamat\n"
+                "• Atau ketik *skip* untuk lewati",
                 parse_mode='Markdown'
             )
             
             return WAITING_EVENT_LOCATION
         except Exception as e:
             await update.message.reply_text(
-                "❌ Format durasi tidak valid.\n"
-                "Contoh: '1 jam' atau '90 menit'"
+                "❌ Format durasi tidak valid!\n\n"
+                "Contoh format yang benar:\n"
+                "• _1 jam_\n"
+                "• _90 menit_\n"
+                "• _2 jam 30 menit_\n\n"
+                "Silakan coba lagi:",
+                parse_mode='Markdown'
             )
             return WAITING_EVENT_DURATION
     
@@ -268,9 +369,9 @@ class BotHandlers:
             
             # Send confirmation
             confirmation = (
-                "✅ *Jadwal berhasil ditambahkan!*\n\n"
+                "✅ *JADWAL BERHASIL DITAMBAHKAN!*\n\n"
                 f"📅 *Judul:* {data['event_title']}\n"
-                f"📆 *Tanggal:* {start_datetime.strftime('%d/%m/%Y')}\n"
+                f"📆 *Tanggal:* {start_datetime.strftime('%A, %d %B %Y')}\n"
                 f"⏰ *Waktu:* {start_datetime.strftime('%H:%M')} - {end_datetime.strftime('%H:%M')}\n"
             )
             
@@ -282,7 +383,8 @@ class BotHandlers:
             await update.message.reply_text(
                 confirmation,
                 parse_mode='Markdown',
-                disable_web_page_preview=True
+                disable_web_page_preview=True,
+                reply_markup=get_quick_reply_keyboard()
             )
             
             # Clear user data
@@ -400,11 +502,20 @@ class BotHandlers:
             self.user_data[user_id]['events_to_delete'] = events
             
             # Create selection menu
-            message = "🗑️ *Pilih jadwal yang akan dihapus:*\n\n"
+            message = (
+                "🗑️ *HAPUS JADWAL*\n\n"
+                "Pilih nomor jadwal yang akan dihapus:\n"
+                "════════════════════\n"
+            )
             for i, event in enumerate(events, 1):
-                message += f"{i}. {format_event(event)}\n"
+                message += f"\n*{i}.* {format_event(event)}\n"
             
-            message += "\nKetik nomor jadwal atau 'cancel' untuk batal:"
+            message += (
+                "\n════════════════════\n"
+                "*Cara memilih:*\n"
+                "• Ketik nomor (contoh: 1)\n"
+                "• Ketik 'cancel' untuk batal"
+            )
             
             await update.message.reply_text(
                 message,
@@ -425,7 +536,10 @@ class BotHandlers:
         selection = update.message.text
         
         if selection.lower() == 'cancel':
-            await update.message.reply_text("❌ Penghapusan dibatalkan.")
+            await update.message.reply_text(
+                "❌ Penghapusan dibatalkan.",
+                reply_markup=get_quick_reply_keyboard()
+            )
             return ConversationHandler.END
         
         try:
@@ -440,13 +554,18 @@ class BotHandlers:
                 self.calendar_service.delete_event(event_id)
                 
                 await update.message.reply_text(
-                    f"✅ Jadwal '{event.get('summary', 'Untitled')}' berhasil dihapus!"
+                    f"✅ Jadwal '{event.get('summary', 'Untitled')}' berhasil dihapus!",
+                    reply_markup=get_quick_reply_keyboard()
                 )
             else:
-                await update.message.reply_text("❌ Nomor tidak valid.")
+                await update.message.reply_text("❌ Nomor tidak valid. Silakan coba lagi.")
+                return WAITING_DELETE_SELECTION
             
         except ValueError:
-            await update.message.reply_text("❌ Masukkan nomor yang valid.")
+            await update.message.reply_text(
+                "❌ Masukkan nomor yang valid atau ketik 'cancel' untuk batal."
+            )
+            return WAITING_DELETE_SELECTION
         except Exception as e:
             await update.message.reply_text(f"❌ Error: {str(e)}")
         
@@ -467,8 +586,14 @@ class BotHandlers:
         
         if not message:
             await update.message.reply_text(
-                "💬 Silakan ketik pesan Anda setelah /ai\n"
-                "Contoh: /ai bantu saya mengatur jadwal minggu ini"
+                "💬 *AI ASSISTANT*\n\n"
+                "Silakan ketik pesan setelah /ai\n\n"
+                "*Contoh penggunaan:*\n"
+                "• _/ai meeting dengan tim besok jam 2 siang_\n"
+                "• _/ai analisis jadwal saya minggu ini_\n"
+                "• _/ai beri tips produktivitas_\n\n"
+                "Atau langsung chat tanpa /ai untuk membuat jadwal otomatis!",
+                parse_mode='Markdown'
             )
             return
         
@@ -508,13 +633,14 @@ class BotHandlers:
                     )
                     
                     response = (
-                        "✅ Jadwal berhasil ditambahkan!\n\n"
+                        "✅ *AI mendeteksi jadwal dan berhasil menambahkan!*\n\n"
                         f"📅 {data['title']}\n"
                         f"📆 {start_datetime.strftime('%d/%m/%Y %H:%M')}\n"
-                        f"📍 {data.get('location', 'No location')}"
                     )
+                    if data.get('location'):
+                        response += f"📍 {data.get('location')}"
                     
-                    await update.message.reply_text(response)
+                    await update.message.reply_text(response, parse_mode='Markdown')
                 except Exception as e:
                     await update.message.reply_text(
                         f"AI mendeteksi jadwal, tapi gagal membuat: {str(e)}\n\n"
@@ -533,6 +659,6 @@ class BotHandlers:
         """Cancel current operation"""
         await update.message.reply_text(
             "❌ Operasi dibatalkan.",
-            reply_markup=get_main_menu()
+            reply_markup=get_quick_reply_keyboard()
         )
         return ConversationHandler.END
