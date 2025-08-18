@@ -589,7 +589,7 @@ Jika ada pertanyaan atau masalah:
 1. Check dokumentasi ini
 2. Lihat [Troubleshooting](#-troubleshooting)
 3. Buat issue di repository
-4. Contact: [your-email@example.com]
+4. Contact: akbaralqahri@gmail.com
 
 ## 📈 Version History
 
@@ -606,5 +606,5 @@ Jika ada pertanyaan atau masalah:
 *Bot ini dibuat untuk memudahkan manajemen jadwal Anda. Gunakan dengan bijak!*
 
 <div align="center">
-Made with ❤️ and ☕
+akbaralqahri
 </div>
